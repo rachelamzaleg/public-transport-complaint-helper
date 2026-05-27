@@ -579,139 +579,33 @@ function applyTripContext(updates) {
   updateMissingHighlights();
 }
 
-function getStatusText(value) {
-  return value ? "נבחר" : "חסר";
-}
-
-function createDecisionCard({ title, value, emptyText, helper, options, onSelect }) {
-  const card = document.createElement("article");
-  card.className = "decision-card";
-  if (!value) card.classList.add("needs-choice");
-
-  const header = document.createElement("div");
-  header.className = "decision-card-header";
-
-  const heading = document.createElement("h3");
-  heading.textContent = title;
-
-  const status = document.createElement("span");
-  status.className = "decision-status";
-  status.textContent = getStatusText(value);
-
-  header.append(heading, status);
-  card.appendChild(header);
-
-  const current = document.createElement("p");
-  current.className = "decision-current";
-  current.textContent = value || emptyText;
-  card.appendChild(current);
-
-  if (helper) {
-    const help = document.createElement("p");
-    help.className = "decision-helper";
-    help.textContent = helper;
-    card.appendChild(help);
-  }
-
-  if (options.length > 0) {
-    const chips = document.createElement("div");
-    chips.className = "decision-options";
-
-    options.slice(0, 8).forEach((option) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "decision-option";
-      button.textContent = option.label || option.value || option;
-      button.addEventListener("click", () => onSelect(option));
-      chips.appendChild(button);
-    });
-
-    card.appendChild(chips);
-  }
-
-  return card;
-}
-
-function renderTripContextPanel() {
-  const panel = getElement("tripContextPanel");
+function renderTripSummary(data) {
+  const panel = getElement("tripSummary");
   if (!panel) return;
 
-  const data = readForm();
-  tripContext = {
-    lineNumber: data.lineNumber,
-    operator: data.operator,
-    originCity: data.originCity,
-    destination: data.destination,
-    stationName: data.stationName,
-  };
-
-  const lineContext = getLineContext(data.lineNumber);
-  const directionValue =
-    data.originCity && data.destination ? `${data.originCity} ← ${data.destination}` : "";
-  const knownLineOptions = uniqueValues([...Object.keys(routeKnowledge), ...getHistoryValues("lineNumber")]);
+  const summaryItems = [
+    data.lineNumber ? `קו ${data.lineNumber}` : "",
+    data.originCity && data.destination ? `${data.originCity} ← ${data.destination}` : "",
+    data.stationName ? `תחנה ${data.stationName}` : "",
+    data.plannedTime ? data.plannedTime : "",
+    data.operator ? data.operator : "",
+  ].filter(Boolean);
 
   panel.innerHTML = "";
+  panel.classList.toggle("is-hidden", summaryItems.length === 0);
+  if (summaryItems.length === 0) return;
 
-  const title = document.createElement("div");
-  title.className = "trip-context-title";
-  title.innerHTML = `<h3>בדיקת פרטי נסיעה</h3><p>בחרו את הפרטים המחוברים זה לזה. הטופס מתעדכן מתחת.</p>`;
+  const title = document.createElement("span");
+  title.className = "trip-summary-title";
+  title.textContent = "סיכום נסיעה";
   panel.appendChild(title);
 
-  const grid = document.createElement("div");
-  grid.className = "decision-grid";
-
-  grid.appendChild(
-    createDecisionCard({
-      title: "קו",
-      value: data.lineNumber,
-      emptyText: "לא זוהה מספר קו",
-      helper: "מספר הקו קובע אילו כיוונים, תחנות וחברות אפשר להציע.",
-      options: knownLineOptions.map((value) => ({ value, label: `קו ${value}` })),
-      onSelect: (option) => applyTripContext({ lineNumber: option.value }),
-    })
-  );
-
-  grid.appendChild(
-    createDecisionCard({
-      title: "כיוון נסיעה",
-      value: directionValue,
-      emptyText: data.lineNumber ? "בחרו כיוון לקו" : "בחרו קודם קו",
-      helper: "בחירת כיוון ממלאת יחד את עיר המוצא והיעד.",
-      options: data.lineNumber ? lineContext.directions : [],
-      onSelect: (option) =>
-        applyTripContext({
-          originCity: option.origin,
-          destination: option.destination,
-        }),
-    })
-  );
-
-  grid.appendChild(
-    createDecisionCard({
-      title: "תחנה",
-      value: data.stationName,
-      emptyText: data.lineNumber ? "בחרו מספר / שם תחנה" : "בחרו קודם קו",
-      helper: "התחנות מסוננות לפי הקו, ואם יש כיוון אז גם לפי הכיוון.",
-      options:
-        lineContext.stationStops.length > 0
-          ? lineContext.stationStops
-          : lineContext.stations.map((value) => ({ value, label: value })),
-      onSelect: (option) => applyTripContext({ stationName: option.value || option }),
-    })
-  );
-
-  grid.appendChild(
-    createDecisionCard({
-      title: "חברה מפעילה",
-      value: data.operator,
-      emptyText: data.lineNumber ? "בחרו חברה אפשרית" : "בחרו קודם קו או הקלידו ידנית",
-      helper: "החברה מוצעת לפי הקו והיסטוריה מקומית.",
-      options: lineContext.operators.map((value) => ({ value, label: value })),
-      onSelect: (option) => applyTripContext({ operator: option.value }),
-    })
-  );
-
-  panel.appendChild(grid);
+  summaryItems.forEach((item) => {
+    const chip = document.createElement("span");
+    chip.className = "trip-summary-chip";
+    chip.textContent = item;
+    panel.appendChild(chip);
+  });
 }
 
 function getFieldOptions(field, data) {
@@ -1129,7 +1023,7 @@ function updateMissingHighlights() {
   getElement("missingNotice").classList.toggle("is-hidden", missingFields.length === 0);
   renderGuidedAssistant(data, missingFields);
   getElement("missingSuggestions").classList.add("is-hidden");
-  renderTripContextPanel();
+  renderTripSummary(data);
 
   document.querySelectorAll("[data-required-field]").forEach((wrapper) => {
     wrapper.classList.toggle(
