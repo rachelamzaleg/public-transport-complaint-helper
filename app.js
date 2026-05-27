@@ -579,35 +579,6 @@ function applyTripContext(updates) {
   updateMissingHighlights();
 }
 
-function renderTripSummary(data) {
-  const panel = getElement("tripSummary");
-  if (!panel) return;
-
-  const summaryItems = [
-    data.lineNumber ? `קו ${data.lineNumber}` : "",
-    data.originCity && data.destination ? `${data.originCity} ← ${data.destination}` : "",
-    data.stationName ? `תחנה ${data.stationName}` : "",
-    data.plannedTime ? data.plannedTime : "",
-    data.operator ? data.operator : "",
-  ].filter(Boolean);
-
-  panel.innerHTML = "";
-  panel.classList.toggle("is-hidden", summaryItems.length === 0);
-  if (summaryItems.length === 0) return;
-
-  const title = document.createElement("span");
-  title.className = "trip-summary-title";
-  title.textContent = "סיכום נסיעה";
-  panel.appendChild(title);
-
-  summaryItems.forEach((item) => {
-    const chip = document.createElement("span");
-    chip.className = "trip-summary-chip";
-    chip.textContent = item;
-    panel.appendChild(chip);
-  });
-}
-
 function getFieldOptions(field, data) {
   const lineContext = getLineContext(data.lineNumber);
   const optionMap = {
@@ -1023,7 +994,6 @@ function updateMissingHighlights() {
   getElement("missingNotice").classList.toggle("is-hidden", missingFields.length === 0);
   renderGuidedAssistant(data, missingFields);
   getElement("missingSuggestions").classList.add("is-hidden");
-  renderTripSummary(data);
 
   document.querySelectorAll("[data-required-field]").forEach((wrapper) => {
     wrapper.classList.toggle(
