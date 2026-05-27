@@ -143,6 +143,41 @@ h2 {
   margin-bottom: 14px;
 }
 
+.advanced-editor {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0;
+}
+
+.advanced-editor summary {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--accent-dark);
+  font-weight: 700;
+  padding: 11px 14px;
+}
+
+.advanced-editor summary::marker {
+  color: var(--accent-dark);
+}
+
+.advanced-editor[open] {
+  padding-bottom: 12px;
+}
+
+.advanced-editor[open] summary {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.advanced-editor .details-grid {
+  padding: 0 14px;
+}
+
 .field span {
   font-weight: 700;
 }

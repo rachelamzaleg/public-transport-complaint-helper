@@ -47,77 +47,79 @@
         <section id="tripContextPanel" class="trip-context" aria-label="בדיקת פרטי נסיעה"></section>
         <div id="missingSuggestions" class="missing-suggestions is-hidden" aria-live="polite"></div>
 
-        <h3 class="advanced-title">עריכה מתקדמת</h3>
-        <form id="detailsForm" class="details-grid">
-          <label class="field">
-            <span>סוג תחבורה</span>
-            <input id="transportType" name="transportType" value="אוטובוס" readonly />
-          </label>
-          <label class="field" data-required-field="lineNumber">
-            <span>מספר קו</span>
-            <input id="lineNumber" name="lineNumber" inputmode="numeric" list="lineSuggestions" />
-          </label>
-          <label class="field" data-required-field="operator">
-            <span>חברה מפעילה</span>
-            <input id="operator" name="operator" list="operatorSuggestions" />
-          </label>
-          <label class="field" data-required-field="originCity">
-            <span>עיר מוצא</span>
-            <input id="originCity" name="originCity" list="citySuggestions" />
-          </label>
-          <label class="field" data-required-field="destination">
-            <span>יעד</span>
-            <input id="destination" name="destination" list="citySuggestions" />
-          </label>
-          <label class="field" data-required-field="stationName">
-            <span>מספר / שם תחנה</span>
-            <input id="stationName" name="stationName" list="stationSuggestions" />
-          </label>
-          <label class="field" data-required-field="eventDate">
-            <span>תאריך האירוע</span>
-            <input id="eventDate" name="eventDate" type="date" />
-          </label>
-          <label class="field" data-required-field="plannedTime">
-            <span>שעה מתוכננת</span>
-            <input id="plannedTime" name="plannedTime" type="time" />
-          </label>
-          <label class="field" data-required-field="issueType">
-            <span>סוג תקלה</span>
-            <select id="issueType" name="issueType">
-              <option value="">בחרו סוג תקלה</option>
-              <option>האוטובוס לא הגיע</option>
-              <option>האוטובוס עבר ולא עצר</option>
-              <option>האוטובוס הגיע מלא ולא העלה נוסעים</option>
-              <option>איחור חריג</option>
-              <option>שירות לא תקין</option>
-              <option>אחר</option>
-            </select>
-          </label>
-          <label class="field" data-required-field="damage">
-            <span>נזק שנגרם</span>
-            <select id="damage" name="damage">
-              <option value="">בחרו נזק שנגרם</option>
-              <option>איחור לעבודה</option>
-              <option>איחור ללימודים</option>
-              <option>צורך במונית</option>
-              <option>המתנה ממושכת</option>
-              <option>החמצת תור או פגישה</option>
-              <option>אחר</option>
-            </select>
-          </label>
-          <label class="field field-wide" data-required-field="description">
-            <span>תיאור נוסף</span>
-            <textarea id="description" name="description" rows="5"></textarea>
-          </label>
-          <label class="field">
-            <span>שם הפונה <small>לא חובה</small></span>
-            <input id="contactName" name="contactName" autocomplete="name" />
-          </label>
-          <label class="field">
-            <span>טלפון <small>לא חובה</small></span>
-            <input id="contactPhone" name="contactPhone" inputmode="tel" autocomplete="tel" />
-          </label>
-        </form>
+        <details class="advanced-editor">
+          <summary>עריכה מתקדמת</summary>
+          <form id="detailsForm" class="details-grid">
+            <label class="field">
+              <span>סוג תחבורה</span>
+              <input id="transportType" name="transportType" value="אוטובוס" readonly />
+            </label>
+            <label class="field" data-required-field="lineNumber">
+              <span>מספר קו</span>
+              <input id="lineNumber" name="lineNumber" inputmode="numeric" list="lineSuggestions" />
+            </label>
+            <label class="field" data-required-field="operator">
+              <span>חברה מפעילה</span>
+              <input id="operator" name="operator" list="operatorSuggestions" />
+            </label>
+            <label class="field" data-required-field="originCity">
+              <span>עיר מוצא</span>
+              <input id="originCity" name="originCity" list="citySuggestions" />
+            </label>
+            <label class="field" data-required-field="destination">
+              <span>יעד</span>
+              <input id="destination" name="destination" list="citySuggestions" />
+            </label>
+            <label class="field" data-required-field="stationName">
+              <span>מספר / שם תחנה</span>
+              <input id="stationName" name="stationName" list="stationSuggestions" />
+            </label>
+            <label class="field" data-required-field="eventDate">
+              <span>תאריך האירוע</span>
+              <input id="eventDate" name="eventDate" type="date" />
+            </label>
+            <label class="field" data-required-field="plannedTime">
+              <span>שעה מתוכננת</span>
+              <input id="plannedTime" name="plannedTime" type="time" />
+            </label>
+            <label class="field" data-required-field="issueType">
+              <span>סוג תקלה</span>
+              <select id="issueType" name="issueType">
+                <option value="">בחרו סוג תקלה</option>
+                <option>האוטובוס לא הגיע</option>
+                <option>האוטובוס עבר ולא עצר</option>
+                <option>האוטובוס הגיע מלא ולא העלה נוסעים</option>
+                <option>איחור חריג</option>
+                <option>שירות לא תקין</option>
+                <option>אחר</option>
+              </select>
+            </label>
+            <label class="field" data-required-field="damage">
+              <span>נזק שנגרם</span>
+              <select id="damage" name="damage">
+                <option value="">בחרו נזק שנגרם</option>
+                <option>איחור לעבודה</option>
+                <option>איחור ללימודים</option>
+                <option>צורך במונית</option>
+                <option>המתנה ממושכת</option>
+                <option>החמצת תור או פגישה</option>
+                <option>אחר</option>
+              </select>
+            </label>
+            <label class="field field-wide" data-required-field="description">
+              <span>תיאור נוסף</span>
+              <textarea id="description" name="description" rows="5"></textarea>
+            </label>
+            <label class="field">
+              <span>שם הפונה <small>לא חובה</small></span>
+              <input id="contactName" name="contactName" autocomplete="name" />
+            </label>
+            <label class="field">
+              <span>טלפון <small>לא חובה</small></span>
+              <input id="contactPhone" name="contactPhone" inputmode="tel" autocomplete="tel" />
+            </label>
+          </form>
+        </details>
 
         <datalist id="lineSuggestions"></datalist>
         <datalist id="operatorSuggestions"></datalist>
