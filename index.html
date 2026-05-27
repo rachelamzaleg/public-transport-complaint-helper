@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>עוזר תלונה לתחבורה ציבורית</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">הכנה להגשה רשמית</p>
+          <h1>עוזר תלונה לתחבורה ציבורית</h1>
+        </div>
+        <p class="disclaimer">
+          הכלי מכין את הפרטים ופותח את טופס משרד התחבורה. הוא לא מחליף את הטופס הרשמי ולא מגיש תלונה אוטומטית.
+        </p>
+      </header>
+
+      <section class="stepper" aria-label="שלבי התהליך">
+        <div class="step-indicator is-active" data-step-marker="1">1<span>מה קרה?</span></div>
+        <div class="step-indicator" data-step-marker="2">2<span>השלמת פרטים</span></div>
+        <div class="step-indicator" data-step-marker="3">3<span>חבילת הגשה</span></div>
+      </section>
+
+      <section class="panel" data-step="1">
+        <h2>מה קרה?</h2>
+        <label class="field">
+          <span>תיאור חופשי</span>
+          <textarea
+            id="freeText"
+            rows="8"
+            placeholder="לדוגמה: קו 618 מבית שמש לירושלים עבר היום ב-08:10 בתחנת קנה בושם ולא עצר למרות שהיו נוסעים בתחנה."
+          ></textarea>
+        </label>
+        <button class="primary-button" id="analyzeButton" type="button">נתח פרטים</button>
+      </section>
+
+      <section class="panel is-hidden" data-step="2">
+        <div class="section-title">
+          <h2>פרטים שחולצו</h2>
+          <p id="missingNotice" class="notice is-hidden">חסרים כמה פרטים כדי להכין את ההגשה.</p>
+        </div>
+        <div id="analysisSummary" class="analysis-summary" aria-live="polite"></div>
+        <section id="tripContextPanel" class="trip-context" aria-label="בדיקת פרטי נסיעה"></section>
+        <div id="missingSuggestions" class="missing-suggestions is-hidden" aria-live="polite"></div>
+
+        <form id="detailsForm" class="details-grid">
+          <label class="field">
+            <span>סוג תחבורה</span>
+            <input id="transportType" name="transportType" value="אוטובוס" readonly />
+          </label>
+          <label class="field" data-required-field="lineNumber">
+            <span>מספר קו</span>
+            <input id="lineNumber" name="lineNumber" inputmode="numeric" list="lineSuggestions" />
+          </label>
+          <label class="field" data-required-field="operator">
+            <span>חברה מפעילה</span>
+            <input id="operator" name="operator" list="operatorSuggestions" />
+          </label>
+          <label class="field" data-required-field="originCity">
+            <span>עיר מוצא</span>
+            <input id="originCity" name="originCity" list="citySuggestions" />
+          </label>
+          <label class="field" data-required-field="destination">
+            <span>יעד</span>
+            <input id="destination" name="destination" list="citySuggestions" />
+          </label>
+          <label class="field" data-required-field="stationName">
+            <span>מספר / שם תחנה</span>
+            <input id="stationName" name="stationName" list="stationSuggestions" />
+          </label>
+          <label class="field" data-required-field="eventDate">
+            <span>תאריך האירוע</span>
+            <input id="eventDate" name="eventDate" type="date" />
+          </label>
+          <label class="field" data-required-field="plannedTime">
+            <span>שעה מתוכננת</span>
+            <input id="plannedTime" name="plannedTime" type="time" />
+          </label>
+          <label class="field" data-required-field="issueType">
+            <span>סוג תקלה</span>
+            <select id="issueType" name="issueType">
+              <option value="">בחרו סוג תקלה</option>
+              <option>האוטובוס לא הגיע</option>
+              <option>האוטובוס עבר ולא עצר</option>
+              <option>האוטובוס הגיע מלא ולא העלה נוסעים</option>
+              <option>איחור חריג</option>
+              <option>שירות לא תקין</option>
+              <option>אחר</option>
+            </select>
+          </label>
+          <label class="field" data-required-field="damage">
+            <span>נזק שנגרם</span>
+            <select id="damage" name="damage">
+              <option value="">בחרו נזק שנגרם</option>
+              <option>איחור לעבודה</option>
+              <option>איחור ללימודים</option>
+              <option>צורך במונית</option>
+              <option>המתנה ממושכת</option>
+              <option>החמצת תור או פגישה</option>
+              <option>אחר</option>
+            </select>
+          </label>
+          <label class="field field-wide" data-required-field="description">
+            <span>תיאור נוסף</span>
+            <textarea id="description" name="description" rows="5"></textarea>
+          </label>
+          <label class="field">
+            <span>שם הפונה <small>לא חובה</small></span>
+            <input id="contactName" name="contactName" autocomplete="name" />
+          </label>
+          <label class="field">
+            <span>טלפון <small>לא חובה</small></span>
+            <input id="contactPhone" name="contactPhone" inputmode="tel" autocomplete="tel" />
+          </label>
+        </form>
+
+        <datalist id="lineSuggestions"></datalist>
+        <datalist id="operatorSuggestions"></datalist>
+        <datalist id="citySuggestions"></datalist>
+        <datalist id="stationSuggestions"></datalist>
+
+        <div class="actions-row">
+          <button class="secondary-button" id="backToTextButton" type="button">חזרה לתיאור</button>
+          <button class="secondary-button" id="swapRouteButton" type="button">החלף מוצא ויעד</button>
+          <button class="primary-button" id="prepareButton" type="button">הכן חבילת הגשה</button>
+        </div>
+      </section>
+
+      <section class="panel is-hidden" data-step="3">
+        <div class="section-title">
+          <h2>חבילת הגשה</h2>
+          <p class="notice success">הפרטים מוכנים להעתקה לטופס הרשמי. לא בוצעה הגשה.</p>
+        </div>
+
+        <div class="table-wrap">
+          <table id="submissionTable">
+            <thead>
+              <tr>
+                <th>שדה</th>
+                <th>ערך</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <label class="field field-wide">
+          <span>תיאור תלונה קצר</span>
+          <textarea id="complaintText" rows="6" readonly></textarea>
+        </label>
+
+        <div class="copy-grid">
+          <button type="button" data-copy="lineNumber">העתק מספר קו</button>
+          <button type="button" data-copy="stationName">העתק תחנה</button>
+          <button type="button" data-copy="dateTime">העתק תאריך ושעה</button>
+          <button type="button" data-copy="complaint">העתק תיאור תלונה</button>
+          <button type="button" data-copy="all">העתק הכול</button>
+        </div>
+        <p id="copyFeedback" class="copy-feedback" aria-live="polite"></p>
+
+        <div class="actions-row">
+          <button class="secondary-button" id="editDetailsButton" type="button">עריכת פרטים</button>
+          <a
+            class="primary-button link-button"
+            id="officialFormLink"
+            href="https://www.gov.il/he/service/complaint_about_conduct_in_public_transportation"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            פתח טופס תלונה רשמי
+          </a>
+        </div>
+        <p class="official-form-hint">
+          בטופס הרשמי בחרו באפשרות: <strong>פנייה חדשה</strong>. האתר הממשלתי אינו מאפשר לנו לסמן זאת מראש מתוך קישור חיצוני.
+        </p>
+      </section>
+
+      <section class="history-section">
+        <div class="section-title">
+          <h2>היסטוריה</h2>
+          <button class="text-button" id="clearHistoryButton" type="button">נקה היסטוריה</button>
+        </div>
+        <div class="table-wrap">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>תאריך</th>
+                <th>קו</th>
+                <th>תחנה</th>
+                <th>סוג תקלה</th>
+                <th>סטטוס</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
