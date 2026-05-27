@@ -714,6 +714,237 @@ function renderTripContextPanel() {
   panel.appendChild(grid);
 }
 
+function getFieldOptions(field, data) {
+  const lineContext = getLineContext(data.lineNumber);
+  const optionMap = {
+    lineNumber: uniqueValues([...Object.keys(routeKnowledge), ...getHistoryValues("lineNumber")]).map(
+      (value) => ({ label: `קו ${value}`, updates: { lineNumber: value } })
+    ),
+    eventDate: [
+      { label: "היום", updates: { eventDate: formatDateForInput(new Date()) } },
+      { label: "אתמול", updates: { eventDate: getYesterdayValue() } },
+    ],
+    issueType: [
+      "האוטובוס לא הגיע",
+      "האוטובוס עבר ולא עצר",
+      "האוטובוס הגיע מלא ולא העלה נוסעים",
+      "איחור חריג",
+      "שירות לא תקין",
+      "אחר",
+    ].map((value) => ({ label: value, updates: { issueType: value } })),
+    damage: [
+      "איחור לעבודה",
+      "איחור ללימודים",
+      "צורך במונית",
+      "המתנה ממושכת",
+      "החמצת תור או פגישה",
+      "אחר",
+    ].map((value) => ({ label: value, updates: { damage: value } })),
+    routeDirection: lineContext.directions.map((direction) => ({
+      label: direction.label,
+      updates: {
+        originCity: direction.origin,
+        destination: direction.destination,
+      },
+    })),
+    stationName: (
+      lineContext.stationStops.length > 0
+        ? lineContext.stationStops
+        : lineContext.stations.map((value) => ({ value, label: value }))
+    ).map((station) => ({
+      label: station.label || station.value,
+      updates: { stationName: station.value },
+    })),
+    operator: lineContext.operators.map((value) => ({ label: value, updates: { operator: value } })),
+  };
+
+  return optionMap[field] || [];
+}
+
+function getNextGuidedQuestion(data, missingFields) {
+  if (missingFields.includes("lineNumber")) {
+    return {
+      field: "lineNumber",
+      title: "איזה קו זה היה?",
+      helper: "מספר הקו עוזר לנו להציע כיוון, תחנות וחברה.",
+      manualLabel: "מספר קו",
+      manualType: "text",
+    };
+  }
+
+  if (missingFields.includes("eventDate")) {
+    return {
+      field: "eventDate",
+      title: "מתי זה קרה?",
+      helper: "אם זה לא היום או אתמול, אפשר להזין תאריך בשדה.",
+      manualLabel: "תאריך אחר",
+      manualType: "date",
+    };
+  }
+
+  if (missingFields.includes("plannedTime")) {
+    return {
+      field: "plannedTime",
+      title: "באיזו שעה זה קרה או היה אמור לקרות?",
+      helper: "השעה עוזרת לאתר את הנסיעה המתוכננת.",
+      manualLabel: "שעה",
+      manualType: "time",
+    };
+  }
+
+  if (missingFields.includes("issueType")) {
+    return {
+      field: "issueType",
+      title: "איזו תקלה קרתה?",
+      helper: "בחרו את האפשרות הכי קרובה למה שקרה בפועל.",
+    };
+  }
+
+  if (missingFields.includes("originCity") || missingFields.includes("destination")) {
+    return {
+      field: "routeDirection",
+      title: data.lineNumber ? `לאיזה כיוון נסע קו ${data.lineNumber}?` : "מה היה כיוון הנסיעה?",
+      helper: "בחירה אחת ממלאת גם עיר מוצא וגם יעד.",
+      manualLabel: "מלאו מוצא ויעד בעריכה המתקדמת",
+    };
+  }
+
+  if (missingFields.includes("stationName")) {
+    return {
+      field: "stationName",
+      title: "באיזו תחנה זה קרה?",
+      helper: data.lineNumber
+        ? "אם יש הצעות, הן מסוננות לפי הקו והכיוון. עדיף לבחור מספר תחנה אם ידוע."
+        : "אפשר להקליד מספר תחנה או שם תחנה.",
+      manualLabel: "מספר / שם תחנה",
+      manualType: "text",
+    };
+  }
+
+  if (missingFields.includes("operator")) {
+    return {
+      field: "operator",
+      title: "איזו חברה מפעילה?",
+      helper: "אם לא בטוחים, אפשר לבחור הצעה לפי הקו או להשלים בהמשך בטופס הרשמי.",
+      manualLabel: "חברה מפעילה",
+      manualType: "text",
+    };
+  }
+
+  if (missingFields.includes("damage")) {
+    return {
+      field: "damage",
+      title: "מה הנזק שנגרם?",
+      helper: "זה יעזור לנסח תלונה ממוקדת וברורה.",
+    };
+  }
+
+  if (missingFields.includes("description")) {
+    return {
+      field: "description",
+      title: "האם יש תיאור קצר של מה שקרה?",
+      helper: "משפט עובדתי אחד מספיק בשלב הזה.",
+      manualLabel: "תיאור",
+      manualType: "text",
+    };
+  }
+
+  return null;
+}
+
+function renderGuidedAssistant(data, missingFields) {
+  const wrapper = getElement("guidedAssistant");
+  if (!wrapper) return;
+
+  const readyCount = requiredFields.length - missingFields.length;
+  const question = getNextGuidedQuestion(data, missingFields);
+
+  wrapper.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.className = "guided-header";
+
+  const title = document.createElement("h3");
+  title.textContent = "השלמת פרטים חסרים";
+
+  const progress = document.createElement("span");
+  progress.className = "guided-progress";
+  progress.textContent = `${readyCount}/${requiredFields.length} פרטים מוכנים`;
+
+  header.append(title, progress);
+  wrapper.appendChild(header);
+
+  const meter = document.createElement("div");
+  meter.className = "guided-meter";
+  const fill = document.createElement("span");
+  fill.style.width = `${Math.round((readyCount / requiredFields.length) * 100)}%`;
+  meter.appendChild(fill);
+  wrapper.appendChild(meter);
+
+  if (!question) {
+    const done = document.createElement("p");
+    done.className = "guided-done";
+    done.textContent = "כל פרטי החובה מוכנים. אפשר להכין חבילת הגשה.";
+    wrapper.appendChild(done);
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.className = "guided-question";
+
+  const qTitle = document.createElement("h4");
+  qTitle.textContent = question.title;
+  card.appendChild(qTitle);
+
+  const helper = document.createElement("p");
+  helper.textContent = question.helper;
+  card.appendChild(helper);
+
+  const options = getFieldOptions(question.field, data);
+  if (options.length > 0) {
+    const optionWrap = document.createElement("div");
+    optionWrap.className = "guided-options";
+
+    options.slice(0, 8).forEach((option) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = option.label;
+      button.addEventListener("click", () => applyTripContext(option.updates));
+      optionWrap.appendChild(button);
+    });
+
+    card.appendChild(optionWrap);
+  }
+
+  if (question.manualType) {
+    const manual = document.createElement("label");
+    manual.className = "guided-manual";
+    manual.innerHTML = `<span>${question.manualLabel}</span>`;
+
+    const input = document.createElement("input");
+    input.type = question.manualType;
+    input.value = data[question.field] || "";
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        if (input.value.trim()) applyTripContext({ [question.field]: input.value.trim() });
+      }
+    });
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "שמור";
+    button.addEventListener("click", () => {
+      if (input.value.trim()) applyTripContext({ [question.field]: input.value.trim() });
+    });
+
+    manual.append(input, button);
+    card.appendChild(manual);
+  }
+
+  wrapper.appendChild(card);
+}
+
 function getSuggestionGroups(missingFields) {
   const historyLines = getHistoryValues("lineNumber");
   const historyStations = getHistoryValues("stationName");
@@ -896,7 +1127,8 @@ function updateMissingHighlights() {
   const missingFields = getMissingFields(data);
   refreshSuggestionSources();
   getElement("missingNotice").classList.toggle("is-hidden", missingFields.length === 0);
-  renderMissingSuggestions(missingFields);
+  renderGuidedAssistant(data, missingFields);
+  getElement("missingSuggestions").classList.add("is-hidden");
   renderTripContextPanel();
 
   document.querySelectorAll("[data-required-field]").forEach((wrapper) => {
